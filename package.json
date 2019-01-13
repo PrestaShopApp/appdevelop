@@ -1,0 +1,35 @@
+{
+  "name": "react-native-boilerplate",
+  "version": "0.0.0",
+  "description": "Hello Expo!",
+  "author": "bkdev",
+  "private": true,
+  "main": "main.js",
+  "dependencies": {
+    "expo": "^30.0.0",
+    "i": "^0.3.6",
+    "isomorphic-unfetch": "^3.0.0",
+    "lodash": "^4.17.11",
+    "node-fetch": "^2.3.0",
+    "react": "16.3.1",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-30.0.0.tar.gz",
+    "react-native-elements": "^0.19.1",
+    "react-native-globalize": "^1.2.3",
+    "react-native-paper": "^2.4.0",
+    "react-native-snap-carousel": "^3.7.5",
+    "react-navigation": "^2.13.0",
+    "react-navigation-material-bottom-tabs": "0.4.0",
+    "react-redux": "5.0.7",
+    "redux": "3.7.2",
+    "redux-logger": "^3.0.6",
+    "redux-thunk": "2.2.0",
+    "styled-components": "3.2.3",
+    "xml2js": "^0.4.19"
+  },
+  "devDependencies": {
+    "eslint": "4.3.0",
+    "eslint-config-equimper": "2.2.1",
+    "eslint-config-prettier": "2.3.0",
+    "prettier": "1.5.3"
+  }
+}
