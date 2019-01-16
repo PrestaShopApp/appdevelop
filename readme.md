@@ -42,4 +42,4 @@ $ expo ios
 $ expo android
 ```
 
-Proyecto de investigación como trabajo de fin de grado para la US, Javier Sánche Beltrán.
+Proyecto de investigación como trabajo de fin de grado para la US, Javier Sánchez Beltrán.

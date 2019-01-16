@@ -4,6 +4,7 @@ import { configuration } from '../utils/constants';
 import { Buffer } from 'buffer';
 
 /* 
+https://prestashopappmobile.es/api/categories?filter[id]=[2,3]&display=full
 URL took from configuration variables
 Params:
 url_resource: (string) products
@@ -23,31 +24,25 @@ function chooseURL(url_resource, display, limit, filter) {
   return url + '&output_format=JSON';
 }
 
-export default class PrestashopAPI {
-  static get_request(url_resource, display, limit, filter) {
-    let url = chooseURL(url_resource, display, limit, filter);
-    console.log('PrestashopAPI.js - URL - ', url);
-    // Credentials : Authorization
-    let apiKey = configuration.apiKey;
-    let precursor = `${apiKey}:`;
-    let credentials = Buffer.from(precursor).toString('base64');
+export async function get_request(url_resource, display, limit, filter) {
+  let url = chooseURL(url_resource, display, limit, filter);
+  console.log('PrestashopAPI.js - URL - ', url);
+  // Credentials : Authorization
+  let apiKey = configuration.apiKey;
+  let precursor = `${apiKey}:`;
+  let credentials = Buffer.from(precursor).toString('base64');
 
-    const headers = {};
-    headers['Authorization'] = `Basic ${credentials}`;
-    const options = {
-      method: 'GET',
-      headers,
-    };
+  const headers = {};
+  headers['Authorization'] = `Basic ${credentials}`;
+  const options = {
+    method: 'GET',
+    headers,
+  };
 
-    console.log('PrestashopAPI.js - start get products');
+  console.log('PrestashopAPI.js - Start fetch');
 
-    return fetch(url, options)
-      .then(response => {
-        console.log('PrestashopApi.js - return response json');
-        return response.json();
-      })
-      .catch(error => {
-        return error;
-      });
-  }
+  let response = await fetch(url, options);
+  let data = await response.json();
+
+  return data;
 }
