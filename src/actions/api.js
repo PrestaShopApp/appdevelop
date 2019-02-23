@@ -1,6 +1,11 @@
 import { get_request } from '../api/PrestashopAPI';
 import { stripAndTruncate } from '../utils/methods';
 import {
+  getCategoriesData,
+  getCategoryData,
+  getProductsData,
+} from '../utils/ApiData';
+import {
   GET_REQUEST_PRODUCTS,
   GET_RECEIVED_PRODUCTS_SUCCESS,
   GET_RECEIVED_PRODUCTS_FAILURE,
@@ -10,6 +15,7 @@ import {
 } from './types';
 
 // ----  API PRODUCTS ----
+// All products
 export const requestProducts = () => ({
   type: GET_REQUEST_PRODUCTS,
 });
@@ -47,21 +53,16 @@ export const receivedCategoriesFailure = error => ({
 
 // ---- FUNCTIONS -----
 
-export function getProducts() {
+export function getProducts(idCategory) {
+  //if idCategory, get ProductsByCategory
+  filter = idCategory
+    ? (filter = { attribute: 'id_category_default', value: `[${idCategory}]` })
+    : null;
   return function(dispatch) {
     dispatch(requestProducts());
-    return get_request('products', 'full')
+    return get_request('products', 'full', null, filter)
       .then(response => {
-        let result = [];
-        let data = response.products;
-        for (var i = 0; i < data.length; i++) {
-          result.push({
-            id: data[i].id,
-            name: data[i].name[0].value,
-            price: data[i].price,
-            image: data[i].associations.images[0].id,
-          });
-        }
+        let result = getProductsData(response.products);
         dispatch(receivedProductsSuccess(result));
       })
       .catch(error => {
@@ -90,16 +91,12 @@ export function getProduct(id) {
 
 export function getCategories(root, id) {
   //Fetch first time or fetch specfic category
-  console.log('ROOOT', root);
   let url = 'categories';
   let display = null;
   let filter = null;
   //If root take level depth 2 from category tree
   if (root) {
-    filter = {
-      attribute: 'level_depth',
-      value: '2',
-    };
+    filter = { attribute: 'level_depth', value: '2' };
     display = 'full';
   } else {
     url = url + `/${id}`;
@@ -114,7 +111,6 @@ export function getCategories(root, id) {
           root,
           response
         ).then(result => {
-          console.log('DEVOLVER TODO', result);
           dispatch(receivedCategoriesSuccess(result[0], result[1], result[2]));
         });
       })
@@ -129,47 +125,22 @@ export function getCategories(root, id) {
 // return [root, principalCategory, childCategories]
 async function resolveDataAfterRequestCategory(root, response) {
   if (root) {
-    let data = response.categories;
-    let childCategories = [];
-    for (var i = 0; i < data.length; i++) {
-      childCategories.push({
-        id: data[i].id,
-        name: data[i].name[0].value,
-        description: stripAndTruncate(data[i].description[0].value),
-        active: data[i].active,
-        // image: data[i].associations.images[0].id,
-      });
-    }
+    let childCategories = getCategoriesData(response.categories);
+
     return [root, null, childCategories];
   } else {
     let data = response.category;
-    //Get data from principal category
-    principalCategory = {
-      id: data.id,
-      idParent: data.id_parent,
-      level_depth: data.level_depth,
-      name: data.name[0].value,
-      description: stripAndTruncate(data.description[0].value, 100),
-    };
-    //Get child categories from principal category if empty stop
-    idArrayFetchFromAPI = data.associations.categories;
-    if (!idArrayFetchFromAPI) return [root, principalCategory, null];
-    idCategoriesArray = [];
-    for (var i = 0; i < idArrayFetchFromAPI.length; i++) {
-      idCategoriesArray.push(idArrayFetchFromAPI[i].id);
-    }
+    let principalCategory = getCategoryData(data);
+    //If the categorie does not have child categories, return
+    if (!data.associations.categories) return [root, principalCategory, null];
     //Get filter to fetch child categories
-    filter = {
-      attribute: 'id',
-      value: `[${idCategoriesArray.join(',')}]`,
-    };
+    filter = { attribute: 'id_parent', value: `[${data.id}]` };
     //Fetch child categories, we use recursion to get data
     let secondResponse = await get_request('categories', 'full', null, filter);
     let childCategories = await resolveDataAfterRequestCategory(
       true,
       secondResponse
     );
-
     return [root, principalCategory, childCategories[2]];
   }
 }
